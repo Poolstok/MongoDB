@@ -116,6 +116,28 @@ MongoDB <- R6::R6Class(
 
    filterQuery <- paste0(filterQuery, "}")
    return(filterQuery)
+  },
+
+  CreateFieldsQuery = function(fields, includeIDs = TRUE)
+  {
+   if(length(fields) == 0) return( if(includeIDs) '{ "_id" : true}' else '{ "_id" : false}')
+
+   fieldsQuery <- if(includeIDs) '{ "_id" : true,' else '{ "_id" : false,'
+
+   for(idx in 1:length(fields))
+   {
+    field <- fields[idx]
+
+    fieldsQuery <- paste0(fieldsQuery, "\"", field, "\":")
+    fieldsQuery <- paste0(fieldsQuery, "true")
+
+    if(idx != length(fields))
+    {
+     fieldsQuery <- paste0(fieldsQuery, ", ")
+    }
+   }
+   fieldsQuery <- paste0(fieldsQuery, "}")
+   return(fieldsQuery)
   }
  )
 )
