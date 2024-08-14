@@ -23,16 +23,17 @@ MongoDB <- R6::R6Class(
    return(private$collections[[collection]])
   },
 
-  FindInCollection = function(collection, filters = list(), includeIDs = FALSE, asDataframe = TRUE)
+  FindInCollection = function(collection, filters = list(), fields = list(), includeIDs = FALSE, asDataframe = TRUE)
   {
    filterQuery <- private$CreateFilterQuery(filters)
+   fieldsQuery <- private$CreateFieldsQuery(fields, includeIDs = includeIDs)
    if(asDataframe)
    {
-    queryResults <- private$RunFind(collection, filterQuery, includeIDs)
+    queryResults <- private$RunFind(collection = collection, filterQuery = filterQuery, fieldsQuery = fieldsQuery, includeIDs = includeIDs)
     return(queryResults)
    }
 
-   queryResults <- private$RunIterate(collection, filterQuery)
+   queryResults <- private$RunIterate(collection = collection, filterQuery = filterQuery)
 
    return(queryResults)
   },
@@ -53,15 +54,12 @@ MongoDB <- R6::R6Class(
    return(url)
   },
 
-  RunFind = function(collection, filterQuery, includeIDs)
+  RunFind = function(collection, filterQuery, includeIDs, fieldsQuery = "{}")
   {
-   if(includeIDs)
-   {
-    queryResults <- self$GetCollection(collection)$find(filterQuery, fields = "{}")
-    return(queryResults)
-   }
+   # If fieldsQuery was not supplied, check to see if the ID needs to be returned
+   if(fieldsQuery == "{}" & !includeIDs) fieldsQuery <- '{ "_id" : false }'
 
-   queryResults <- self$GetCollection(collection)$find(filterQuery)
+   queryResults <- self$GetCollection(collection)$find(filterQuery, fields = fieldsQuery)
    return(queryResults)
   },
 
