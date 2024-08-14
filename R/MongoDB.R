@@ -105,8 +105,14 @@ MongoDB <- R6::R6Class(
     value <- filters[[idx]]
     key <- names(filters[idx])
 
-    filterQuery <- paste0(filterQuery, "\"", key, "\":")
-    filterQuery <- paste0(filterQuery, private$FormatFilterValue(value))
+    if(key == "_id"){
+     filterQuery <- paste0(filterQuery, "\"", key, "\":")
+     filterQuery <- paste0(filterQuery, '{ "$oid" : "', value ,'"}')
+    }
+    else{
+     filterQuery <- paste0(filterQuery, "\"", key, "\":")
+     filterQuery <- paste0(filterQuery, private$FormatFilterValue(value))
+    }
 
     if(idx != length(filters))
     {
