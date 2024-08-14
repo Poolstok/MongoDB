@@ -23,6 +23,15 @@ MongoDB <- R6::R6Class(
    return(private$collections[[collection]])
   },
 
+ 
+  RetrieveDocumentById = function(collection, id, includeID = FALSE, asDataframe = TRUE)
+  {
+    doc <- self$FindInCollection(collection, filters = list("_id" = OnId(id)),
+                                 includeIDs = includeID,
+                                 asDataframe = asDataframe)
+    return(doc)
+  },
+
   FindInCollection = function(collection, filters = list(), fields = list(), includeIDs = FALSE, asDataframe = TRUE)
   {
    filterQuery <- private$CreateFilterQuery(filters)
