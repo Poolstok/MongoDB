@@ -23,6 +23,14 @@ MongoDB <- R6::R6Class(
    return(private$collections[[collection]])
   },
 
+  RetrieveDocumentById = function(collection, id, includeID = FALSE, asDataframe = TRUE)
+  {
+    doc <- self$FindInCollection(collection, filters = list("_id" = OnId(id)),
+                                 includeIDs = includeID,
+                                 asDataframe = asDataframe)
+    return(doc)
+  },
+
   FindInCollection = function(collection, filters = list(), includeIDs = FALSE, asDataframe = TRUE)
   {
    filterQuery <- private$CreateFilterQuery(filters)
@@ -105,14 +113,8 @@ MongoDB <- R6::R6Class(
     value <- filters[[idx]]
     key <- names(filters[idx])
 
-    if(key == "_id"){
-     filterQuery <- paste0(filterQuery, "\"", key, "\":")
-     filterQuery <- paste0(filterQuery, '{ "$oid" : "', value ,'"}')
-    }
-    else{
-     filterQuery <- paste0(filterQuery, "\"", key, "\":")
-     filterQuery <- paste0(filterQuery, private$FormatFilterValue(value))
-    }
+    filterQuery <- paste0(filterQuery, "\"", key, "\":")
+    filterQuery <- paste0(filterQuery, private$FormatFilterValue(value))
 
     if(idx != length(filters))
     {

@@ -26,3 +26,5 @@ LessThan       = function(value) return(MongoOperator$new("lt", value))
 LessOrEqual    = function(value) return(MongoOperator$new("lte", value))
 #' @export
 NotEqualTo     = function(value) return(MongoOperator$new("ne", value))
+#' @export
+OnId = function(value) return(MongoOperator$new("oid", value))
