@@ -16,6 +16,22 @@ MongoOperator <- R6Class(
  )
 )
 
+VectorOperator <- R6Class(
+  "VectorOperator",
+  inherit = MongoOperator,
+  public = list(
+    initialize = function(operator, vector)
+    {
+      jsonVec <- sapply(vector, function(value){
+        mongoOp <- MongoOperator$new(operator, value)
+        return(mongoOp$GetJSON())
+      })
+      jsonString <- paste0(jsonVec, collapse = ",")
+      private$json <- paste0('{"$in":[', jsonString, ']}')
+    }
+  )
+)
+
 #' @export
 GreaterThan    = function(value) return(MongoOperator$new("gt", value))
 #' @export
@@ -28,3 +44,5 @@ LessOrEqual    = function(value) return(MongoOperator$new("lte", value))
 NotEqualTo     = function(value) return(MongoOperator$new("ne", value))
 #' @export
 OnId = function(value) return(MongoOperator$new("oid", value))
+#' @export
+OnIds = function(vector) return(VectorOperator$new("oid", vector))
