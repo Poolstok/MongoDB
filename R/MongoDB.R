@@ -13,12 +13,12 @@ MongoDB <- R6::R6Class(
 
   GetCollection = function(collection)
   {
-   if(is.null(private$collections[[collection]])) # Collection is not retrieved yet
-   {
-    private$collections[[collection]] <- mongolite::mongo(collection = collection,
-                                               db = private$dbName,
-                                               url = private$url)
-   }
+    if(is.null(private$collections[[collection]])) # Collection is not retrieved yet
+    {
+      private$collections[[collection]] <- mongolite::mongo(collection = collection,
+                                                 db = private$dbName,
+                                                 url = private$url)
+    }
 
    return(private$collections[[collection]])
   },
@@ -31,17 +31,19 @@ MongoDB <- R6::R6Class(
     return(doc)
   },
 
-  FindInCollection = function(collection, filters = list(), includeIDs = FALSE, asDataframe = TRUE)
+  FindInCollection = function(collection, filters = list(), fields = list(), includeIDs = FALSE, asDataframe = TRUE)
   {
    filterQuery <- private$CreateFilterQuery(filters)
+   fieldsQuery <- private$CreateFieldsQuery(fields, includeIDs = includeIDs)
    if(asDataframe)
    {
-    queryResults <- private$RunFind(collection, filterQuery, includeIDs)
+    queryResults <- private$RunFind(collection = collection,
+                                    filterQuery = filterQuery,
+                                    fieldsQuery = fieldsQuery)
     return(queryResults)
    }
 
-   queryResults <- private$RunIterate(collection, filterQuery)
-
+   queryResults <- private$RunIterate(collection = collection, filterQuery = filterQuery, fieldsQuery = fieldsQuery)
    return(queryResults)
   },
 
@@ -61,27 +63,30 @@ MongoDB <- R6::R6Class(
    return(url)
   },
 
-  RunFind = function(collection, filterQuery, includeIDs)
+  RunFind = function(collection, filterQuery, includeIDs, fieldsQuery)
   {
-   if(includeIDs)
-   {
-    queryResults <- self$GetCollection(collection)$find(filterQuery, fields = "{}")
-    return(queryResults)
-   }
-
-   queryResults <- self$GetCollection(collection)$find(filterQuery)
+   queryResults <- self$GetCollection(collection)$find(filterQuery, fields = fieldsQuery)
    return(queryResults)
   },
 
-  RunIterate = function(collection, filterQuery)
+  RunIterate = function(collection, filterQuery, fieldsQuery)
   {
-   docs <- list()
-   iterator <- self$GetCollection(collection)$iterate(query = filterQuery, fields = "{}")
-   while(!is.null(doc <- iterator$one()))
-   {
-    docs[[doc$`_id`]] <- doc
-   }
-   return(docs)
+    docs <- list()
+    iterator <- self$GetCollection(collection)$iterate(query = filterQuery, fields = fieldsQuery)
+    idx <- 0
+    while(!is.null(doc <- iterator$one()))
+    {
+      # IDs not included
+      if(is.null(doc$`_id`))
+      {
+        idx <- idx + 1
+        docs[[idx]] <- doc
+        next
+      }
+      # IDs included
+      docs[[doc$`_id`]] <- doc
+    }
+    return(docs)
   },
 
   FormatFilterValue = function(value)
@@ -124,6 +129,36 @@ MongoDB <- R6::R6Class(
 
    filterQuery <- paste0(filterQuery, "}")
    return(filterQuery)
-  }
- )
+  },
+
+  CreateFieldsQuery = function(fields, includeIDs = TRUE)
+  {
+    if(length(fields) == 0 && includeIDs)
+    {
+      return("{}")
+    }
+    # Start with ID inclusion string
+    fieldsQuery <- paste0('{"_id":', as.numeric(includeIDs))
+
+    for(idx in seq_along(fields))
+    {
+      if(idx == 1)
+      {
+        fieldsQuery <- paste0(fieldsQuery, ", ")
+      }
+
+      field <- fields[idx]
+
+      fieldsQuery <- paste0(fieldsQuery, "\"", field, "\":")
+      fieldsQuery <- paste0(fieldsQuery, "true")
+
+      if(idx != length(fields))
+      {
+        fieldsQuery <- paste0(fieldsQuery, ", ")
+      }
+    }
+    fieldsQuery <- paste0(fieldsQuery, "}")
+    return(fieldsQuery)
+    }
+  )
 )
