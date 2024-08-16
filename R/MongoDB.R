@@ -13,12 +13,12 @@ MongoDB <- R6::R6Class(
 
   GetCollection = function(collection)
   {
-   if(is.null(private$collections[[collection]])) # Collection is not retrieved yet
-   {
-    private$collections[[collection]] <- mongolite::mongo(collection = collection,
-                                               db = private$dbName,
-                                               url = private$url)
-   }
+    if(is.null(private$collections[[collection]])) # Collection is not retrieved yet
+    {
+      private$collections[[collection]] <- mongolite::mongo(collection = collection,
+                                                 db = private$dbName,
+                                                 url = private$url)
+    }
 
    return(private$collections[[collection]])
   },
@@ -43,7 +43,7 @@ MongoDB <- R6::R6Class(
     return(queryResults)
    }
 
-   queryResults <- private$RunIterate(collection = collection, filterQuery = filterQuery, fieldsQuery)
+   queryResults <- private$RunIterate(collection = collection, filterQuery = filterQuery, fieldsQuery = fieldsQuery)
    return(queryResults)
   },
 
@@ -73,8 +73,17 @@ MongoDB <- R6::R6Class(
   {
     docs <- list()
     iterator <- self$GetCollection(collection)$iterate(query = filterQuery, fields = fieldsQuery)
+    idx <- 0
     while(!is.null(doc <- iterator$one()))
     {
+      # IDs not included
+      if(is.null(doc$`_id`))
+      {
+        idx <- idx + 1
+        docs[[idx]] <- doc
+        next
+      }
+      # IDs included
       docs[[doc$`_id`]] <- doc
     }
     return(docs)
@@ -129,7 +138,7 @@ MongoDB <- R6::R6Class(
       return("{}")
     }
     # Start with ID inclusion string
-    fieldsQuery <- paste0('{ "_id" : ', as.numeric(includeIDs))
+    fieldsQuery <- paste0('{"_id":', as.numeric(includeIDs))
 
     for(idx in seq_along(fields))
     {
