@@ -23,15 +23,15 @@ MongoDB <- R6::R6Class(
    return(private$collections[[collection]])
   },
 
-  RetrieveDocumentById = function(collection, id, includeID = FALSE, asDataframe = TRUE)
+  RetrieveDocumentById = function(collection, id, includeID = TRUE, asDataframe = FALSE)
   {
     doc <- self$FindInCollection(collection, filters = list("_id" = OnId(id)),
                                  includeIDs = includeID,
                                  asDataframe = asDataframe)
-    return(doc)
+    return(doc[[1]])
   },
 
-  FindInCollection = function(collection, filters = list(), fields = list(), includeIDs = FALSE, asDataframe = TRUE)
+  FindInCollection = function(collection, filters = list(), fields = list(), includeIDs = TRUE, asDataframe = FALSE)
   {
    filterQuery <- private$CreateFilterQuery(filters)
    fieldsQuery <- private$CreateFieldsQuery(fields, includeIDs = includeIDs)

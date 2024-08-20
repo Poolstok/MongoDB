@@ -48,10 +48,7 @@ VectorOperator <- R6Class(
 
     AddValueInclusivity = function(inVector, vectorString)
     {
-      if(inVector)
-      {
-        return(paste0('{"$in":[', vectorString, ']}'))
-      }
+      if(inVector) return(paste0('{"$in":[', vectorString, ']}'))
       return(paste0('{"$nin":[', vectorString, ']}'))
     }
   )
