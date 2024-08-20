@@ -28,6 +28,7 @@ MongoDB <- R6::R6Class(
     doc <- self$FindInCollection(collection, filters = list("_id" = OnId(id)),
                                  includeIDs = includeID,
                                  asDataframe = asDataframe)
+    if(length(doc) == 0) stop(paste("Error in MongoDB$RetrieveDocumentById: No document with id", id, "found!"))
     return(doc[[1]])
   },
 
