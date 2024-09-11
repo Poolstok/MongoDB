@@ -52,6 +52,16 @@ MongoDB <- R6::R6Class(
   UploadToCollection = function(collection, document)
   {
    self$GetCollection(collection)$insert(document, stop_on_error = FALSE)
+  },
+
+  UpdateDocuments = function(collection, filters, updateValues, multiple = FALSE, safeMode = TRUE)
+  {
+    if(length(filters) == 0 && safeMode) stop("No filters where provided to MongoDB$UpdateDocuments() call with safe mode on.")
+    if(length(updateValues) == 0) stop("No values to update provided!")
+    if(is.list(updateValues) == FALSE) stop("updateValues should be a list!")
+    filterQuery <- private$CreateFilterQuery(filters)
+    updateQuery <- private$CreateUpdateValuesQuery(updateValues)
+    self$GetCollection(collection)$update(filterQuery, updateQuery)
   }
  ),
  private = list(
@@ -107,6 +117,60 @@ MongoDB <- R6::R6Class(
    if(is.character(value)) return(paste0("\"", value, "\""))
    if(is.logical(value)) return(tolower(as.character(value)))
    return(value)
+  },
+
+  FormatUpdateValue = function(value)
+  {
+    if(is.null(value)) return("null")
+    if(length(value) > 1 && is.character(value))
+    {
+      collapsedVec <- paste0(value, collapse = '","')
+      formattedValue <- paste0('["', collapsedVec, '"]')
+      return(formattedValue)
+    }
+    if(length(value) > 1 && is.logical(value))
+    {
+      value <- as.character(value)
+      value <- tolower(value)
+      collapsedVec <- paste0(value, collapse = ',')
+      formattedValue <- paste0(paste0('[', collapsedVec, ']'))
+      return(formattedValue)
+    }
+    if(length(value) > 1)
+    {
+      collapsedVec <- paste0(value, collapse = ',')
+      formattedValue <- paste0('[', collapsedVec, ']')
+      return(formattedValue)
+    }
+    if(is.character(value))
+    {
+      formattedValue <- paste0('"', value, '"')
+      return(formattedValue)
+    }
+    if(is.logical(value))
+    {
+      formattedValue <- paste0(tolower(value))
+      return(formattedValue)
+    }
+    return(value)
+  },
+
+  CreateUpdateValuesQuery = function(updateValues)
+  {
+    valuesQuery <- '{"$set":'
+    for(idx in seq_along(updateValues))
+    {
+      value <- updateValues[[idx]]
+      key <- names(updateValues[idx])
+      formattedValue <- private$FormatUpdateValue(value)
+      valuesQuery <- paste0(valuesQuery, '{"', key, '":', formattedValue, '}')
+      if(idx != length(updateValues))
+      {
+        valuesQuery <- paste0(valuesQuery, ',')
+      }
+    }
+    valuesQuery <- paste0(valuesQuery, '}')
+    return(valuesQuery)
   },
 
   CreateFilterQuery = function(filters)
