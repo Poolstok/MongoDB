@@ -1,72 +1,70 @@
-MongoOperator <- R6Class(
- "MongoOperator",
- public = list(
-  initialize = function(operator, value)
-  {
-   if(is.character(value)) value <- paste0('"', value, '"')
-   private$json = paste0("{\"$", operator, "\":", value, "}")
-  },
-  GetJSON = function()
-  {
-   return(private$json)
-  }
- ),
- private = list(
-  json = NULL
- )
-)
+library(jsonlite)
 
-VectorOperator <- R6Class(
-  "VectorOperator",
-  inherit = MongoOperator,
+MongoOperator <- R6Class(
+  "MongoOperator",
   public = list(
-    initialize = function(operator, vector, inVector = TRUE)
+    initialize = function(operator, value, auto_unbox = TRUE, valueWrapper = NULL)
     {
-      vectorString <- private$CreateVectorString(operator, vector)
-      private$json <- private$AddValueInclusivity(inVector, vectorString)
+      operator <- paste0("$", operator)
+      if(!is.null(valueWrapper))
+      {
+        value <- private$ApplyWrapper(value, valueWrapper)
+      }
+
+      private$rObj[[operator]] <- value
+      private$auto_unbox <- auto_unbox
+    },
+    GetJSON = function()
+    {
+      return(toJSON(private$rObj, auto_unbox = private$auto_unbox))
+    },
+    GetRObj = function()
+    {
+      return(private$rObj)
     }
   ),
   private = list(
-    CreateVectorString = function(operator, vector)
+    rObj = NULL,
+    auto_unbox = NULL,
+    ApplyWrapper = function(values, valueWrapper)
     {
-      if(!is.null(operator) && operator != "")
-      {
-        vector <- sapply(vector, function(value){
-          mongoOp <- MongoOperator$new("oid", value)
-          return(mongoOp$GetJSON())
-        })
-      }
-      else if(is.character(vector))
-      {
-        vector <- sapply(vector, function(value){
-          return(paste0('"', value, '"'))
-        })
-      }
-      vecString <- paste0(vector, collapse = ", ")
-      return(vecString)
-    },
-
-    AddValueInclusivity = function(inVector, vectorString)
-    {
-      if(inVector) return(paste0('{"$in":[', vectorString, ']}'))
-      return(paste0('{"$nin":[', vectorString, ']}'))
+      wrappedValues <- lapply(values, function(item){
+        subList <- list()
+        subList[[valueWrapper]] <- item
+        return(subList)
+      })
+      return(wrappedValues)
     }
   )
 )
 
 #' @export
-GreaterThan    = function(value) return(MongoOperator$new("gt", value))
+GreaterThan = function(value) return(MongoOperator$new("gt", value))
+
 #' @export
 GreaterOrEqual = function(value) return(MongoOperator$new("gte", value))
+
 #' @export
-LessThan       = function(value) return(MongoOperator$new("lt", value))
+LessThan = function(value) return(MongoOperator$new("lt", value))
+
 #' @export
-LessOrEqual    = function(value) return(MongoOperator$new("lte", value))
+LessOrEqual = function(value) return(MongoOperator$new("lte", value))
+
 #' @export
-NotEqualTo     = function(value) return(MongoOperator$new("ne", value))
+NotEqualTo = function(value) return(MongoOperator$new("ne", value))
+
 #' @export
 OnId = function(value) return(MongoOperator$new("oid", value))
+
 #' @export
-OnIds = function(vector, excludeIDs = FALSE) return(VectorOperator$new("oid", vector, !excludeIDs))
+NotIn = function(...) return(MongoOperator$new("nin", as.array(c(...)), auto_unbox = FALSE))
+
 #' @export
-NotIn = function(vector) return(VectorOperator$new("", vector, inVector = FALSE))
+In = function(...) return(MongoOperator$new("in", as.array(c(...)), auto_unbox = TRUE))
+
+#' @export
+OnIds = function(...) {
+  values <- as.list(unlist(list(...), use.names = FALSE)) # Ensure correct unpacking & repackaging (DON'T CHANGE THIS)
+  return(MongoOperator$new("in", values, auto_unbox = TRUE, valueWrapper = "$oid"))
+}
+
