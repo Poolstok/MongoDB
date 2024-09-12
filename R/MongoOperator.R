@@ -11,7 +11,7 @@ MongoOperator <- R6Class(
     },
     GetJSON = function()
     {
-      return(toJSON(private$rObj, auto_unbox = private$auto_unbox))
+      return(jsonlite::toJSON(private$rObj, auto_unbox = private$auto_unbox))
     },
     GetRObj = function()
     {

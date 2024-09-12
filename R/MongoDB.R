@@ -112,7 +112,7 @@ MongoDB <- R6::R6Class(
   CreateUpdateValuesQuery = function(updateValues)
   {
     updateValues <- list("$set" = updateValues)
-    updateQuery <- toJSON(updateValues, auto_unbox = TRUE)
+    updateQuery <- jsonlite::toJSON(updateValues, auto_unbox = TRUE)
     return(updateQuery)
   },
 
@@ -124,7 +124,7 @@ MongoDB <- R6::R6Class(
       private$FormatFilterValue(value)
     })
 
-    filterQuery <- toJSON(filters, auto_unbox = TRUE)
+    filterQuery <- jsonlite::toJSON(filters, auto_unbox = TRUE)
     return(filterQuery)
   },
 
@@ -144,7 +144,7 @@ MongoDB <- R6::R6Class(
 
     fieldsObj[["_id"]] = as.numeric(includeIDs)
 
-    fieldsQuery <- toJSON(fieldsObj, auto_unbox = TRUE)
+    fieldsQuery <- jsonlite::toJSON(fieldsObj, auto_unbox = TRUE)
     return(fieldsQuery)
     }
   )
