@@ -44,17 +44,37 @@ oid$GetJSON()
 VerifyOutput(oid$GetJSON(), '{"$oid":"66aa2661b3152f2d8bed095f"}')
 
 ### NOT IN ARRAY ###
-ninSingle <- NotIn("Test")
+ninSingle <- NotIn("test 1")
 ninSingle$GetRObj()
 ninSingle$GetJSON()
+
+ninSingleVec <- NotIn(c("test 1"))
+ninSingleVec$GetRObj()
+ninSingleVec$GetJSON()
+
+ninSingleList <- NotIn(list("test 1"))
+ninSingleList$GetRObj()
+ninSingleList$GetJSON()
+
+ninSingleNamedList <- NotIn(list(a = "test 1"))
+ninSingleNamedList$GetRObj()
+ninSingleNamedList$GetJSON()
 
 ninMultiple <- NotIn("test 1", "test 2", "test 3")
 ninMultiple$GetRObj()
 ninMultiple$GetJSON()
 
-ninMultipleAlt <- NotIn(c("test 1", "test 2", "test 3"))
-ninMultipleAlt$GetRObj()
-ninMultipleAlt$GetJSON()
+ninMultipleVec <- NotIn(c("test 1", "test 2", "test 3"))
+ninMultipleVec$GetRObj()
+ninMultipleVec$GetJSON()
+
+ninMultipleList <- NotIn(list("test 1", "test 2", "test 3"))
+ninMultipleList$GetRObj()
+ninMultipleList$GetJSON()
+
+ninMultipleNamedList <- NotIn(list(a = "test 1", b = "test 2", c = "test 3"))
+ninMultipleNamedList$GetRObj()
+ninMultipleNamedList$GetJSON()
 
 ### ON MULTIPLE IDS ###
 oidsSingle <- OnIds("66aa2661b3152f2d8bed095f")

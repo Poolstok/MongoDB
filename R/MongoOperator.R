@@ -43,14 +43,23 @@ NotEqualTo = function(value) return(MongoOperator$new("ne", value))
 OnId = function(value) return(MongoOperator$new("oid", value))
 
 #' @export
-NotIn = function(...) return(MongoOperator$new("nin", as.array(c(...)), auto_unbox = FALSE))
+NotIn = function(...)
+{
+  values <- unlist(list(...), use.names = FALSE)
+  return(MongoOperator$new("nin", values, auto_unbox = FALSE))
+}
 
 #' @export
-In = function(...) return(MongoOperator$new("in", as.array(c(...)), auto_unbox = TRUE))
+In = function(...)
+{
+  values <- unlist(list(), use.names = FALSE)
+  return(MongoOperator$new("in", values, auto_unbox = TRUE))
+}
 
 #' @export
-OnIds = function(...) {
-  values <- as.list(unlist(list(...), use.names = FALSE)) # Ensure correct unpacking & repackaging (DON'T CHANGE THIS)
+OnIds = function(...)
+{
+  values <- unlist(list(...), use.names = FALSE) # Ensure correct unpacking
   idObjects <- lapply(values, function(id){
     idObj <- list()
     idObj[["$oid"]] <- id
