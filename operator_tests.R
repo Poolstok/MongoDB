@@ -43,6 +43,35 @@ oid$GetRObj()
 oid$GetJSON()
 VerifyOutput(oid$GetJSON(), '{"$oid":"66aa2661b3152f2d8bed095f"}')
 
+### IN ARRAY ###
+inSingle <- In("test 1")
+inSingle$GetRObj()
+inSingle$GetJSON()
+
+inSingleVec <- In(c("test 1"))
+inSingleVec$GetRObj()
+inSingleVec$GetJSON()
+
+inSingleList <- In(list("test 1"))
+inSingleList$GetRObj()
+inSingleList$GetJSON()
+
+inSingleNamedList <- In(list(a = "test 1"))
+inSingleNamedList$GetRObj()
+inSingleNamedList$GetJSON()
+
+inMultiple <- In("test 1", "test 2", "test 3")
+inMultiple$GetRObj()
+inMultiple$GetJSON()
+
+inMultipleVec <- In(c("test 1", "test 2", "test 3"))
+inMultipleVec$GetRObj()
+inMultipleVec$GetJSON()
+
+inMultipleList <- In(list("test 1", "test 2", "test 3"))
+inMultipleList$GetRObj()
+inMultipleList$GetJSON()
+
 ### NOT IN ARRAY ###
 ninSingle <- NotIn("test 1")
 ninSingle$GetRObj()

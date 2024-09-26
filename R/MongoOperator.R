@@ -52,8 +52,8 @@ NotIn = function(...)
 #' @export
 In = function(...)
 {
-  values <- unlist(list(), use.names = FALSE)
-  return(MongoOperator$new("in", values, auto_unbox = TRUE))
+  values <- unlist(list(...), use.names = FALSE)
+  return(MongoOperator$new("in", values, auto_unbox = FALSE))
 }
 
 #' @export
