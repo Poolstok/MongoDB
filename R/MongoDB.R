@@ -62,7 +62,6 @@ MongoDB <- R6::R6Class(
     if(is.list(updateValues) == FALSE) stop("updateValues should be a list!")
     filterQuery <- private$CreateFilterQuery(filters)
     updateQuery <- private$CreateUpdateValuesQuery(updateValues)
-    self$GetCollection(collection)$update(filterQuery, updateQuery)
     self$GetCollection(collection)$update(filterQuery, updateQuery, multiple = multiple)
   }
  ),
