@@ -183,7 +183,7 @@ MongoDB <- R6::R6Class(
 
     fieldsQuery <- jsonlite::toJSON(fieldsObj, auto_unbox = TRUE)
     return(fieldsQuery)
-  },
+  }
 
   # ToJSON = function(obj, ...)
   # {
