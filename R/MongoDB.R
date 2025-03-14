@@ -32,7 +32,7 @@ MongoDB <- R6::R6Class(
                                  asDataframe = asDataframe)
     if(length(doc) == 0)
     {
-      warning(paste("Error in MongoDB$RetrieveDocumentById: No document with id", id, "found!"))
+      warning(paste("No document with id", id, "found!"))
       # Return a list with length 0 but with a tag (~metadata) making it possible to check validity
       return(structure(list(), valid = FALSE))
     }
