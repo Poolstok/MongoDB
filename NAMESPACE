@@ -2,9 +2,11 @@
 
 export(GreaterOrEqual)
 export(GreaterThan)
+export(In)
 export(LessOrEqual)
 export(LessThan)
 export(MongoDB)
 export(NotEqualTo)
+export(NotIn)
 export(OnId)
 export(OnIds)
