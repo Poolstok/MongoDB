@@ -12,6 +12,15 @@ MongoDB <- R6::R6Class(
    private$dbName <- database
   },
 
+  # ConfigureSettings = function(nullHandling = NULL,
+  #                              naHandling   = NULL,
+  #                              autoUnbox    = NULL)
+  # {
+  #   ConfigureSetting("nullHandling", nullHandling, c("list", "null"))
+  #   ConfigureSetting("naHandling",   naHandling,   c("null", "string"))
+  #   ConfigureSetting("autoUnbox",    autoUnbox,    c(TRUE, FALSE))
+  # },
+
   GetCollection = function(collection)
   {
     if(is.null(private$collections[[collection]])) # Collection is not retrieved yet
@@ -61,20 +70,41 @@ MongoDB <- R6::R6Class(
     self$GetCollection(collection)$insert(document, stop_on_error = FALSE)
   },
 
-  UpdateDocuments = function(collection, filters, updateValues, multiple = FALSE, safeMode = TRUE)
+  UpdateDocuments = function(collection, filters, updateValues, multiple = FALSE, safeMode = TRUE, null = "list", na = "null")
   {
     if(length(filters) == 0 && safeMode) stop("No filters where provided to MongoDB$UpdateDocuments() call with safe mode on.")
     if(length(updateValues) == 0) stop("No values to update provided!")
     if(is.list(updateValues) == FALSE) stop("updateValues should be a list!")
     filterQuery <- private$CreateFilterQuery(filters)
-    updateQuery <- private$CreateUpdateValuesQuery(updateValues)
+    updateQuery <- private$CreateUpdateValuesQuery(updateValues, null, na)
     self$GetCollection(collection)$update(filterQuery, updateQuery, multiple = multiple)
   }
  ),
  private = list(
+  # DATA
   url = NULL,
   dbName = NULL,
   collections = list(),
+  # Settings
+  # nullHandling = "list",
+  # naHandling = "null",
+  # autoUnbox = TRUE,
+
+  # FUNCTIONS
+
+  # ConfigureSetting = function(internalName, value, allowedValues)
+  # {
+  #   # No value provided => retain default value
+  #   if(is.null(value)) return()
+  #
+  #   if(length(value) != 1) stop(paste0("Please provide a single value for", internalName))
+  #   if(!value %in% allowedValues)
+  #   {
+  #     allowedValsStr <- paste0(allowedValues, collapse = ", ")
+  #     stop(paste0("Make sure that ", internalName, " has one of following values: ", allowedValsStr))
+  #   }
+  #   private[[internalName]] <- value
+  # },
 
   CreateURL = function(hostIp, hostPort, username, password)
   {
@@ -115,10 +145,11 @@ MongoDB <- R6::R6Class(
     return(value)
   },
 
-  CreateUpdateValuesQuery = function(updateValues)
+  CreateUpdateValuesQuery = function(updateValues, null, na)
   {
     updateValues <- list("$set" = updateValues)
-    updateQuery <- jsonlite::toJSON(updateValues, auto_unbox = TRUE)
+    updateQuery <- jsonlite::toJSON(updateValues, null = null, na = na, auto_unbox = TRUE)
+    # updateQuery <- private$ToJSON(updateValues)
     return(updateQuery)
   },
 
@@ -152,7 +183,19 @@ MongoDB <- R6::R6Class(
 
     fieldsQuery <- jsonlite::toJSON(fieldsObj, auto_unbox = TRUE)
     return(fieldsQuery)
-    }
+  },
+
+  # ToJSON = function(obj, ...)
+  # {
+  #   return(
+  #     jsonlite::toJSON(
+  #       obj,
+  #       auto_unbox = private$autoUnbox,
+  #       null = private$nullHandling,
+  #       na = private$naHandling)
+  #   )
+  # }
+
   )
 )
 
